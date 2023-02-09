@@ -1,4 +1,6 @@
-﻿using Domain;
+﻿using Application.Activities;
+using Domain;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -9,43 +11,42 @@ namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ActivitiesController : ControllerBase
+    public class ActivitiesController : BaseApiController
     {
-        private readonly DataContext _context;
-        public ActivitiesController(DataContext context)
-        {
-            _context = context;
-        }
         // GET: api/<ActivitiesController>
         [HttpGet]
         public async Task<ActionResult<IList<Activity>>> GetActivities()
         {
-            return await _context.Activities.ToListAsync();
+            return await Mediator.Send(new List.Query());
         }
 
         // GET api/<ActivitiesController>/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Activity>> GetActivity(Guid id)
         {
-            return await _context.Activities.FirstOrDefaultAsync(x => x.Id == id);
+            return await Mediator.Send(new Details.Query { Id = id });
         }
 
         // POST api/<ActivitiesController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> Post([FromBody] Activity activity)
         {
+            return Ok(await Mediator.Send(new Create.Command { Activity = activity }));
         }
 
         // PUT api/<ActivitiesController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<IActionResult> Put(Guid id, [FromBody] Activity activity)
         {
+            activity.Id = id;
+            return Ok(Mediator.Send(new Edit.Command { Activity = activity }));
         }
 
         // DELETE api/<ActivitiesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
+            return Ok(await Mediator.Send(new Delete.Command { Id = id }));
         }
     }
 }
