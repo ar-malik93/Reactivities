@@ -1,40 +1,37 @@
+
+import { observer } from "mobx-react-lite";
 import React from "react";
 import { Grid, List, ListItem } from "semantic-ui-react";
+import { useStore } from "../../../app/stores/store";
 import { Activity } from "../../../models/activity";
 import ActivityDetails from "../details/ActivityDetails";
 import ActivityForm from "../form/ActivityForm";
 import ActivityList from "./ActivityList";
 
 interface Props {
-  activities: Activity[];
-  selectedActivity :Activity | undefined;
-  selectActivity: (id:string) => void;
-  cancelActivity:() => void;
-  editMode: boolean;
-  formOpen: (id:string) =>void;
-  formClose: () => void;
+  activities: Activity[];  
   createOrEditActivity: (activity: Activity) =>void;
   deleteActivity:(id:string) => void;
   submitting: boolean
 }
 
-export default function ActivityDashboard({ activities, selectedActivity,selectActivity, cancelActivity,editMode, formOpen, formClose,createOrEditActivity,deleteActivity,submitting }: Props) {
+export default observer (function ActivityDashboard({ activities, createOrEditActivity,deleteActivity,submitting }: Props) {
+    const {activityStore} = useStore();
   return (
     <Grid>
       <Grid.Column width="10">
         <ActivityList 
             activities={activities}
-            selectActivity ={selectActivity}
             deleteActivity = {deleteActivity} 
             submitting ={submitting}
             />
       </Grid.Column>
 
       <Grid.Column width="6">
-        {selectedActivity && !editMode && <ActivityDetails activity={selectedActivity} cancelActivity ={cancelActivity} formOpen={formOpen}  />}
+        {activityStore.selectedActivity && !activityStore.editMode && <ActivityDetails  />}
         
-        {editMode && <ActivityForm formClose= {formClose} activity={selectedActivity} createOrEditActivity= {createOrEditActivity} submitting={submitting} />}
+        {activityStore.editMode && <ActivityForm createOrEditActivity= {createOrEditActivity} submitting={submitting} />}
       </Grid.Column>
     </Grid>
   );
-}
+})
